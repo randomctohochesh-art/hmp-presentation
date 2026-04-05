@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проект "Микробиом человека" (HMP)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a1628;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            padding: 60px;
+            background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 100%);
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Навигация */
+        .nav {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .nav button {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #00d4aa;
+            color: #00d4aa;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .nav button:hover {
+            background: #00d4aa;
+            color: #0a1628;
+        }
+
+        .slide-counter {
+            position: fixed;
+            bottom: 30px;
+            right: 40px;
+            color: #00d4aa;
+            font-size: 18px;
+            z-index: 1000;
+        }
+
+        /* Типографика */
+        h1 {
+            font-size: 4em;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(90deg, #00d4aa, #00a8e8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0,212,170,0.3);
+        }
+
+        h2 {
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            color: #00d4aa;
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 1.8em;
+            color: #00a8e8;
+            margin-bottom: 15px;
+        }
+
+        p, li {
+            font-size: 1.3em;
+            line-height: 1.6;
+            color: #e0e0e0;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        /* Слайд 1 - Титульный */
+        .title-slide h1 {
+            font-size: 5em;
+            margin-bottom: 30px;
+        }
+
+        .subtitle {
+            font-size: 1.8em;
+            color: #00a8e8;
+            margin-bottom: 50px;
+        }
+
+        .nih-logo {
+            width: 150px;
+            height: 150px;
+            border: 4px solid #00d4aa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: #00d4aa;
+            margin-bottom: 40px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,212,170,0.3); }
+            50% { box-shadow: 0 0 40px rgba(0,212,170,0.6); }
+        }
+
+        .author-info {
+            margin-top: 40px;
+            font-size: 1.2em;
+            color: #888;
+        }
+
+        /* Слайд 2 - Парадокс чисел */
+        .numbers-container {
+            display: flex;
+            gap: 100px;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .human-side, .microbe-side {
+            text-align: center;
+        }
+
+        .human-icon, .microbe-icon {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .human-icon {
+            background: linear-gradient(135deg, #00a8e8, #0066cc);
+            border: 4px solid #00a8e8;
+        }
+
+        .microbe-icon {
+            background: linear-gradient(135deg, #00d4aa, #00aa66);
+            border: 4px solid #00d4aa;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .vs {
+            font-size: 3em;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .big-number {
+            font-size: 3em;
+            font-weight: bold;
+            display: block;
+            margin: 10px 0;
+        }
+
+        .human-side .big-number { color: #00a8e8; }
+        .microbe-side .big-number { color: #00d4aa; }
+
+        .genes-highlight {
+            margin-top: 30px;
+            padding: 20px 40px;
+            background: rgba(255,107,107,0.2);
+            border: 2px solid #ff6b6b;
+            border-radius: 15px;
+            font-size: 1.5em;
+        }
+
+        /* Слайд 3 - Определение */
+        .microbiome-def {
+            display: flex;
+            gap: 50px;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .center-circle {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4aa, #00a8e8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0,212,170,0.4);
+        }
+
+        .components {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .comp-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 25px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            border-left: 4px solid #00d4aa;
+        }
+
+        .comp-icon {
+            font-size: 2em;
+        }
+
+        /* Слайд 4 - Локализации */
+        .body-map {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            margin: 20px auto;
+        }
+
+        .body-silhouette {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #00a8e8 0%, #0066cc 100%);
+            clip-path: polygon(50% 0%, 60% 15%, 75% 20%, 80% 35%, 75% 50%, 80% 70%, 70% 90%, 50% 100%, 30% 90%, 20% 70%, 25% 50%, 20% 35%, 25% 20%, 40% 15%);
+            opacity: 0.3;
+        }
+
+        .body-part {
+            position: absolute;
+            background: rgba(0,212,170,0.9);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .part-gut { top: 45%; left: 50%; transform: translateX(-50%); }
+        .part-skin { top: 15%; right: -100px; }
+        .part-mouth { top: 5%; left: 50%; transform: translateX(-50%); }
+        .part-vagina { bottom: 25%; left: -80px; }
+        .part-nose { top: 2%; right: 20%; }
+
+        /* Слайд 5 - Уникальность */
+        .comparison-circles {
+            display: flex;
+            gap: 80px;
+            margin: 40px 0;
+        }
+
+        .circle-chart {
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .taxonomic {
+            background: conic-gradient(
+                #ff6b6b 0deg 40deg,
+                #4ecdc4 40deg 90deg,
+                #45b7d1 90deg 160deg,
+                #96ceb4 160deg 220deg,
+                #ffeaa7 220deg 280deg,
+                #dfe6e9 280deg 360deg
+            );
+        }
+
+        .functional {
+            background: conic-gradient(
+                #00d4aa 0deg 120deg,
+                #00a8e8 120deg 240deg,
+                #ff6b6b 240deg 360deg
+            );
+        }
+
+        .chart-label {
+            position: absolute;
+            bottom: -60px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .arrow-between {
+            font-size: 4em;
+            color: #00d4aa;
+            align-self: center;
+        }
+
+        /* Слайд 6 - Методы */
+        .methods-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 40px 0;
+            max-width: 1000px;
+        }
+
+        .method-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .method-card:hover {
+            border-color: #00d4aa;
+            transform: translateY(-5px);
+        }
+
+        .method-card h3 {
+            color: #00d4aa;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .method-features {
+            list-style: none;
+            text-align: left;
+        }
+
+        .method-features li {
+            margin: 10px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 1.1em;
+        }
+
+        .method-features li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #00d4aa;
+        }
+
+        /* Слайд 7 - Мульти-омика */
+        .omics-hub {
+            position: relative;
+            width: 700px;
+            height: 500px;
+            margin: 30px auto;
+        }
+
+        .center-sample {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255,107,107,0.4);
+            z-index: 10;
+        }
+
+        .omics-node {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-align: center;
+            border: 3px solid;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .node-meta { top: 0; left: 50%; transform: translateX(-50%); border-color: #00d4aa; color: #00d4aa; }
+        .node-trans { top: 20%; right: 0; border-color: #00a8e8; color: #00a8e8; }
+        .node-proteo { bottom: 20%; right: 0; border-color: #ff6b6b; color: #ff6b6b; }
+        .node-metabo { bottom: 0; left: 50%; transform: translateX(-50%); border-color: #ffeaa7; color: #ffeaa7; }
+        .node-viro { bottom: 20%; left: 0; border-color: #a29bfe; color: #a29bfe; }
+        .node-host { top: 20%; left: 0; border-color: #fd79a8; color: #fd79a8; }
+
+        .omics-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .connection-line {
+            position: absolute;
+            background: rgba(255,255,255,0.2);
+            height: 2px;
+            transform-origin: left center;
+        }
+
+        /* Слайд 8 - Культивомика */
+        .culturomics-compare {
+            display: flex;
+            gap: 60px;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .era-box {
+            text-align: center;
+            padding: 40px;
+            border-radius: 20px;
+            width: 350px;
+        }
+
+        .old-era {
+            background: rgba(100,100,100,0.2);
+            border: 2px solid #666;
+        }
+
+        .new-era {
+            background: rgba(0,212,170,0.2);
+            border: 2px solid #00d4aa;
+        }
+
+        .petri-dish {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .old-dish {
+            background: #333;
+        }
+
+        .old-dish::after {
+            content: "";
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #666;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .new-dish {
+            background: #1a1a2e;
+        }
+
+        .colony {
+            position: absolute;
+            border-radius: 50%;
+            background: #00d4aa;
+            opacity: 0.8;
+        }
+
+        .arrow-progress {
+            font-size: 3em;
+            color: #00d4aa;
+        }
+
+        /* Слайд 9 - Результаты 1 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 40px 0;
+            max-width: 900px;
+        }
+
+        .stat-card {
+            background: rgba(0,212,170,0.1);
+            border: 2px solid #00d4aa;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #00d4aa;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            color: #ccc;
+            margin-top: 10px;
+        }
+
+        .core-bacteria {
+            margin-top: 40px;
+            padding: 20px 40px;
+            background: rgba(0,168,232,0.2);
+            border-radius: 15px;
+            border-left: 5px solid #00a8e8;
+        }
+
+        /* Слайд 10 - Три исследования */
+        .studies-row {
+            display: flex;
+            gap: 40px;
+            margin: 40px 0;
+        }
+
+        .study-card {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            border-top: 5px solid;
+            text-align: center;
+        }
+
+        .study-pregnancy { border-color: #fd79a8; }
+        .study-ibd { border-color: #e17055; }
+        .study-diabetes { border-color: #00d4aa; }
+
+        .study-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .study-stats {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            font-size: 1.1em;
+            color: #00d4aa;
+        }
+
+        /* Слайд 11 - ВЗК график */
+        .dynamics-chart {
+            width: 800px;
+            height: 400px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            position: relative;
+            margin: 40px 0;
+            padding: 40px;
+        }
+
+        .chart-axis {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            right: 40px;
+            height: 2px;
+            background: #444;
+        }
+
+        .chart-axis-y {
+            position: absolute;
+            left: 40px;
+            top: 40px;
+            bottom: 40px;
+            width: 2px;
+            background: #444;
+        }
+
+        .chart-line {
+            position: absolute;
+            height: 3px;
+            border-radius: 2px;
+            opacity: 0.8;
+        }
+
+        .line-microbiome {
+            background: #00d4aa;
+            width: 60%;
+            top: 30%;
+            left: 10%;
+            transform: rotate(-5deg);
+        }
+
+        .line-host {
+            background: #00a8e8;
+            width: 60%;
+            top: 50%;
+            left: 10%;
+            transform: rotate(3deg);
+        }
+
+        .line-metabolites {
+            background: #ff6b6b;
+            width: 60%;
+            top: 70%;
+            left: 10%;
+            transform: rotate(-3deg);
+        }
+
+        .flare-point {
+            position: absolute;
+            right: 20%;
+            top: 20%;
+            width: 100px;
+            height: 100px;
+            border: 3px dashed #ff6b6b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff6b6b;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Слайд 12 - Диагностика */
+        .diagnostics-row {
+            display: flex;
+            gap: 50px;
+            margin: 50px 0;
+        }
+
+        .diag-item {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0,212,170,0.1);
+            border-radius: 20px;
+            border: 2px solid #00d4aa;
+            width: 250px;
+            transition: all 0.3s;
+        }
+
+        .diag-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,212,170,0.3);
+        }
+
+        .diag-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        /* Слайд 13 - Терапия */
+        .therapy-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin: 40px 0;
+            max-width: 800px;
+        }
+
+        .therapy-item {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            padding: 25px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            border-left: 5px solid;
+        }
+
+        .therapy-fmt { border-color: #00d4aa; }
+        .therapy-pro { border-color: #00a8e8; }
+        .therapy-post { border-color: #ff6b6b; }
+        .therapy-personal { border-color: #ffeaa7; }
+
+        .therapy-percent {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00d4aa;
+            min-width: 100px;
+        }
+
+        /* Слайд 14 - Будущее */
+        .future-timeline {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .future-stage {
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .stage-now {
+            background: rgba(100,100,100,0.3);
+            border: 2px solid #666;
+        }
+
+        .stage-near {
+            background: rgba(0,168,232,0.3);
+            border: 2px solid #00a8e8;
+            transform: scale(1.1);
+        }
+
+        .stage-future {
+            background: rgba(0,212,170,0.3);
+            border: 2px solid #00d4aa;
+            box-shadow: 0 0 40px rgba(0,212,170,0.4);
+        }
+
+        .bacteria-factory {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .bacteria-body {
+            width: 100%;
+            height: 60%;
+            background: #00d4aa;
+            border-radius: 50px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .factory-chimney {
+            position: absolute;
+            top: -30px;
+            right: 30px;
+            width: 30px;
+            height: 40px;
+            background: #ff6b6b;
+        }
+
+        .molecule {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ffeaa7;
+            border-radius: 50%;
+            animation: float-up 2s infinite;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+
+        /* Слайд 15 - Заключение */
+        .conclusion-points {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .point-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 25px 40px;
+            background: rgba(0,212,170,0.1);
+            border-radius: 15px;
+            border-left: 5px solid #00d4aa;
+            font-size: 1.3em;
+        }
+
+        .point-number {
+            width: 50px;
+            height: 50px;
+            background: #00d4aa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #0a1628;
+            font-size: 1.2em;
+        }
+
+        .quote-box {
+            margin-top: 40px;
+            padding: 30px 50px;
+            border: 2px solid #00a8e8;
+            border-radius: 20px;
+            font-style: italic;
+            font-size: 1.4em;
+            color: #00a8e8;
+            position: relative;
+        }
+
+        .quote-box::before {
+            content: """;
+            font-size: 4em;
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            color: #00a8e8;
+        }
+
+        /* Слайд 16 - Литература */
+        .refs-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 1000px;
+            text-align: left;
+        }
+
+        .refs-column h3 {
+            color: #00d4aa;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #00d4aa;
+            padding-bottom: 10px;
+        }
+
+        .ref-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .ref-item strong {
+            color: #00a8e8;
+        }
+
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: #fff;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a1628;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1200px) {
+            h1 { font-size: 3em; }
+            h2 { font-size: 2em; }
+            .numbers-container { gap: 50px; }
+            .comparison-circles { gap: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        
+        <!-- Слайд 1: Титульный -->
+        <div class="slide active title-slide">
+            <div class="nih-logo">NIH</div>
+            <h1>Проект «Микробиом человека»</h1>
+            <p class="subtitle">Human Microbiome Project (HMP)</p>
+            <p style="font-size: 1.4em; color: #ccc;">От молекулярной экологии к персонализированной медицине</p>
+            <div class="author-info">
+                <p>Доклад по иммунологии</p>
+                <p>2026</p>
+            </div>
+        </div>
+
+        <!-- Слайд 2: Парадокс чисел -->
+        <div class="slide">
+            <h2>Парадокс чисел</h2>
+            <div class="numbers-container">
+                <div class="human-side">
+                    <div class="human-icon">👤</div>
+                    <span class="big-number">10¹³</span>
+                    <p>Человеческих клеток<br>~10 триллионов</p>
+                </div>
+                <div class="vs">VS</div>
+                <div class="microbe-side">
+                    <div class="microbe-icon">🦠</div>
+                    <span class="big-number">10¹⁴</span>
+                    <p>Микробных клеток<br>~100 триллионов</p>
+                </div>
+            </div>
+            <div class="genes-highlight">
+                🔬 Генов микробов в <strong>360 раз</strong> больше, чем в человеческом геноме
+            </div>
+        </div>
+
+        <!-- Слайд 3: Что такое микробиом -->
+        <div class="slide">
+            <h2>Что такое микробиом?</h2>
+            <div class="microbiome-def">
+                <div class="components">
+                    <div class="comp-item">
+                        <span class="comp-icon">🧬</span>
+                        <div>
+                            <strong>Микроорганизмы</strong><br>
+                            Бактерии, вирусы, грибы, археи
+                        </div>
+                    </div>
+                    <div class="comp-item">
+                        <span class="comp-icon">🧪</span>
+                        <div>
+                            <strong>Гены</strong><br>
+                            Совокупность всей генетической информации
+                        </div>
+                    </div>
+                    <div class="comp-item">
+                        <span class="comp-icon">⚗️</span>
+                        <div>
+                            <strong>Метаболиты</strong><br>
+                            Продукты жизнедеятельности микробов
+                        </div>
+                    </div>
+                    <div class="comp-item">
+                        <span class="comp-icon">🔄</span>
+                        <div>
+                            <strong>Взаимодействие</strong><br>
+                            Симбиоз с организмом хозяина
+                        </div>
+                    </div>
+                </div>
+                <div class="center-circle">
+                    МИКРО-<br>БИОМ
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 4: Локализации -->
+        <div class="slide">
+            <h2>Объекты исследования HMP</h2>
+            <div class="body-map">
+                <div class="body-silhouette"></div>
+                <div class="body-part part-mouth">👄 Рот<br><small>биоплёнки</small></div>
+                <div class="body-part part-nose">👃 Нос<br><small>респираторные</small></div>
+                <div class="body-part part-skin">✋ Кожа<br><small>лицо ≠ руки</small></div>
+                <div class="body-part part-gut">🫃 Кишечник<br><small>~1000 видов</small></div>
+                <div class="body-part part-vagina">🌸 Влагалище<br><small>лактобациллы</small></div>
+            </div>
+        </div>
+
+        <!-- Слайд 5: Уникальность -->
+        <div class="slide">
+            <h2>Уникальность vs функциональность</h2>
+            <div class="comparison-circles">
+                <div>
+                    <div class="circle-chart taxonomic"></div>
+                    <div class="chart-label">Таксономический состав<br><span style="color: #888;">Уникален у каждого</span></div>
+                </div>
+                <div class="arrow-between">→</div>
+                <div>
+                    <div class="circle-chart functional"></div>
+                    <div class="chart-label">Функциональный профиль<br><span style="color: #888;">Стабилен у всех</span></div>
+                </div>
+            </div>
+            <p style="margin-top: 80px; font-size: 1.2em;">
+                <strong>Функциональная избыточность:</strong> разные бактерии выполняют одни и те же функции
+            </p>
+        </div>
+
+        <!-- Слайд 6: Методы -->
+        <div class="slide">
+            <h2>Методы молекулярной идентификации</h2>
+            <div class="methods-table">
+                <div class="method-card">
+                    <h3>16S рРНК-секвенирование</h3>
+                    <ul class="method-features">
+                        <li>Один консервативный ген</li>
+                        <li>Таксономический анализ</li>
+                        <li>Быстрый скрининг</li>
+                        <li>Относительно недорого</li>
+                    </ul>
+                </div>
+                <div class="method-card">
+                    <h3>Метагеномика (shotgun)</h3>
+                    <ul class="method-features">
+                        <li>Вся ДНК образца</li>
+                        <li>Таксономия + функции</li>
+                        <li>Глубокий анализ</li>
+                        <li>3.3 млн генов (MetaHIT)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 7: Мульти-омика -->
+        <div class="slide">
+            <h2>Мульти-омный подход iHMP</h2>
+            <div class="omics-hub">
+                <div class="center-sample">ОБРАЗЕЦ<br>стул/мазок</div>
+                
+                <div class="omics-node node-meta">
+                    <div class="omics-icon">🧬</div>
+                    <div>Метагеномика<br>ДНК</div>
+                </div>
+                <div class="omics-node node-trans">
+                    <div class="omics-icon">📋</div>
+                    <div>Метатранскриптомика<br>РНК</div>
+                </div>
+                <div class="omics-node node-proteo">
+                    <div class="omics-icon">🥚</div>
+                    <div>Метапротеомика<br>белки</div>
+                </div>
+                <div class="omics-node node-metabo">
+                    <div class="omics-icon">⚗️</div>
+                    <div>Метаболомика<br>метаболиты</div>
+                </div>
+                <div class="omics-node node-viro">
+                    <div class="omics-icon">🦠</div>
+                    <div>Виромика<br>вирусы</div>
+                </div>
+                <div class="omics-node node-host">
+                    <div class="omics-icon">👤</div>
+                    <div>Хост-омика<br>человек</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 8: Культивомика -->
+        <div class="slide">
+            <h2>Культивомика: возрождение культивирования</h2>
+            <div class="culturomics-compare">
+                <div class="era-box old-era">
+                    <h3>Традиционный подход</h3>
+                    <div class="petri-dish old-dish"></div>
+                    <p>&lt;1% микробов<br>культивируемы</p>
+                    <p style="color: #888; margin-top: 10px;">Несколько видов<br>на чашке</p>
+                </div>
+                <div class="arrow-progress">→</div>
+                <div class="era-box new-era">
+                    <h3>HMP Культивомика</h3>
+                    <div class="petri-dish new-dish">
+                        <div class="colony" style="width: 20px; height: 20px; top: 20%; left: 30%;"></div>
+                        <div class="colony" style="width: 30px; height: 30px; top: 50%; left: 60%;"></div>
+                        <div class="colony" style="width: 25px; height: 25px; top: 70%; left: 25%;"></div>
+                        <div class="colony" style="width: 15px; height: 15px; top: 40%; left: 70%;"></div>
+                        <div class="colony" style="width: 35px; height: 35px; top: 60%; left: 45%;"></div>
+                    </div>
+                    <p><strong>3000+</strong> новых<br>референсных штаммов</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 9: Результаты 1 -->
+        <div class="slide">
+            <h2>Результаты фазы 1 (2007–2014)</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">300+</span>
+                    <div class="stat-label">здоровых доноров</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">18</span>
+                    <div class="stat-label">участков тела</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">10K+</span>
+                    <div class="stat-label">видов микробов</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">3000</span>
+                    <div class="stat-label">референсных геномов</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">18</span>
+                    <div class="stat-label">видов «общего ядра»</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">100%</span>
+                    <div class="stat-label">открытые данные</div>
+                </div>
+            </div>
+            <div class="core-bacteria">
+                <strong>«Общее бактериальное ядро»</strong> — 18 видов бактерий присутствуют практически у всех здоровых людей
+            </div>
+        </div>
+
+        <!-- Слайд 10: Три исследования -->
+        <div class="slide">
+            <h2>Фаза 2: iHMP — три когортных исследования</h2>
+            <div class="studies-row">
+                <div class="study-card study-pregnancy">
+                    <div class="study-icon">🤰</div>
+                    <h3>Беременность</h3>
+                    <p>Преждевременные роды</p>
+                    <div class="study-stats">1500 образцов<br>Маркеры риска</div>
+                </div>
+                <div class="study-card study-ibd">
+                    <div class="study-icon">🫀</div>
+                    <h3>ВЗК</h3>
+                    <p>Болезнь Крона, колит</p>
+                    <div class="study-stats">1785 образцов<br>132 пациента</div>
+                </div>
+                <div class="study-card study-diabetes">
+                    <div class="study-icon">🩸</div>
+                    <h3>Преддиабет</h3>
+                    <p>Инсулинорезистентность</p>
+                    <div class="study-stats">106 пациентов<br>4 года наблюдения</div>
+                </div>
+            </div>
+            <p style="margin-top: 30px;">Продольный дизайн: многократный сбор образцов у одних и тех же пациентов</p>
+        </div>
+
+        <!-- Слайд 11: ВЗК -->
+        <div class="slide">
+            <h2>Ключевое открытие: ВЗК</h2>
+            <p style="margin-bottom: 20px;">При обострении нарушается взаимодействие «хозяин-микробиом»</p>
+            <div class="dynamics-chart">
+                <div class="chart-axis"></div>
+                <div class="chart-axis-y"></div>
+                <div class="chart-line line-microbiome"></div>
+                <div class="chart-line line-host"></div>
+                <div class="chart-line line-metabolites"></div>
+                <div class="flare-point">Обострение</div>
+                <div style="position: absolute; left: 10%; bottom: 50px;">Время →</div>
+                <div style="position: absolute; left: 10px; top: 20%; transform: rotate(-90deg);">Изменения</div>
+            </div>
+            <div style="display: flex; gap: 30px; margin-top: 20px;">
+                <span style="color: #00d4aa;">● Микробиом</span>
+                <span style="color: #00a8e8;">● Гены хозяина</span>
+                <span style="color: #ff6b6b;">● Метаболиты</span>
+            </div>
+        </div>
+
+        <!-- Слайд 12: Диагностика -->
+        <div class="slide">
+            <h2>Клиническое применение: диагностика</h2>
+            <div class="diagnostics-row">
+                <div class="diag-item">
+                    <div class="diag-icon">🧪</div>
+                    <h3>Скрининг рака</h3>
+                    <p>Колоректальный рак<br>Неинвазивный тест<br>По микробиому стула</p>
+                </div>
+                <div class="diag-item">
+                    <div class="diag-icon">🤰</div>
+                    <h3>Преждевременные роды</h3>
+                    <p>Вагинальный микробиом<br>Предикция риска<br>На ранних сроках</p>
+                </div>
+                <div class="diag-item">
+                    <div class="diag-icon">💉</div>
+                    <h3>Диабет 2 типа</h3>
+                    <p>Преддиабет<br>Паттерны риска<br>Персонализированный скрининг</p>
+                </div>
+            </div>
+            <p style="margin-top: 40px; font-size: 1.3em; color: #00d4aa;">
+                Микробиомные маркеры = новая эра биомаркеров
+            </p>
+        </div>
+
+        <!-- Слайд 13: Терапия -->
+        <div class="slide">
+            <h2>Клиническое применение: терапия</h2>
+            <div class="therapy-timeline">
+                <div class="therapy-item therapy-fmt">
+                    <div class="therapy-percent">>90%</div>
+                    <div>
+                        <h3>Фекальная микробиотная трансплантация (FMT)</h3>
+                        <p>Эффективность при рецидивирующей C. difficile</p>
+                    </div>
+                </div>
+                <div class="therapy-item therapy-pro">
+                    <div style="font-size: 2em;">💊</div>
+                    <div>
+                        <h3>Пробиотики и пребиотики</h3>
+                        <p>Коррекция дисбиоза, восстановление баланса</p>
+                    </div>
+                </div>
+                <div class="therapy-item therapy-post">
+                    <div style="font-size: 2em;">⚗️</div>
+                    <div>
+                        <h3>Постбиотики</h3>
+                        <p>Метаболиты бактерий (бутират, пропионат) без живых клеток</p>
+                    </div>
+                </div>
+                <div class="therapy-item therapy-personal">
+                    <div style="font-size: 2em;">🍽️</div>
+                    <div>
+                        <h3>Персонализированное питание</h3>
+                        <p>Диетические рекомендации на основе метагеномного профиля</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 14: Будущее -->
+        <div class="slide">
+            <h2>Будущее: от пробиотиков к живым лекарствам</h2>
+            <div class="future-timeline">
+                <div class="future-stage stage-now">
+                    <h3>Сейчас</h3>
+                    <p>Стандартные пробиотики<br><em>Lactobacillus, Bifidobacterium</em></p>
+                </div>
+                <div style="font-size: 2em; color: #00d4aa;">→</div>
+                <div class="future-stage stage-near">
+                    <h3>Ближайшее будущее</h3>
+                    <p>Синбиотики<br>Пробиотик + пребиотик<br>Целенаправленные смеси</p>
+                </div>
+                <div style="font-size: 2em; color: #00d4aa;">→</div>
+                <div class="future-stage stage-future">
+                    <h3>Перспектива</h3>
+                    <p><strong>Engineered probiotics</strong></p>
+                    <div class="bacteria-factory">
+                        <div class="factory-chimney"></div>
+                        <div class="bacteria-body">
+                            <span style="color: #0a1628; font-weight: bold;">🧬</span>
+                        </div>
+                        <div class="molecule" style="right: 40px; animation-delay: 0s;"></div>
+                        <div class="molecule" style="right: 60px; animation-delay: 0.5s;"></div>
+                        <div class="molecule" style="right: 80px; animation-delay: 1s;"></div>
+                    </div>
+                    <p>Бактерии-синтезаторы<br>инсулина, антител,<br>противовоспалительных<br>цитокинов</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 15: Заключение -->
+        <div class="slide">
+            <h2>Заключение</h2>
+            <div class="conclusion-points">
+                <div class="point-item">
+                    <div class="point-number">1</div>
+                    <div>Микробиом — полноценный орган человека, влияющий на иммунитет, метаболизм и нервную систему</div>
+                </div>
+                <div class="point-item">
+                    <div class="point-number">2</div>
+                    <div>HMP создал инфраструктуру для системной биологии: референсные базы, протоколы, открытые данные</div>
+                </div>
+                <div class="point-item">
+                    <div class="point-number">3</div>
+                    <div>Медицина будущего немыслима без учёта микробной составляющей человека</div>
+                </div>
+            </div>
+            <div class="quote-box">
+                Мы — суперорганизм: эукариот + прокариоты в симбиозе
+            </div>
+        </div>
+
+        <!-- Слайд 16: Литература -->
+        <div class="slide">
+            <h2>Литература и ресурсы</h2>
+            <div class="refs-container">
+                <div class="refs-column">
+                    <h3>🔬 Ключевые публикации</h3>
+                    <div class="ref-item">
+                        <strong>Nature, 2012</strong><br>
+                        The Human Microbiome Project Consortium.<br>
+                        Structure, function and diversity of the healthy human microbiome.
+                    </div>
+                    <div class="ref-item">
+                        <strong>Nature, 2019</strong><br>
+                        Lloyd-Price J. et al.<br>
+                        Multi-omics of the gut microbial ecosystem in inflammatory bowel diseases.
+                    </div>
+                    <div class="ref-item">
+                        <strong>Nature Medicine, 2019</strong><br>
+                        Fettweis J.M. et al.<br>
+                        The vaginal microbiome and preterm birth.
+                    </div>
+                    <div class="ref-item">
+                        <strong>Nature, 2019</strong><br>
+                        Zhou W. et al.<br>
+                        Longitudinal multi-omics of host–microbe dynamics in prediabetes.
+                    </div>
+                </div>
+                <div class="refs-column">
+                    <h3>🌐 Ресурсы</h3>
+                    <div class="ref-item">
+                        <strong>HMP Data Portal</strong><br>
+                        hmpdacc.org<br>
+                        Открытые данные проекта
+                    </div>
+                    <div class="ref-item">
+                        <strong>NIH Human Microbiome Project</strong><br>
+                        Официальный сайт инициативы
+                    </div>
+                    <div class="qr-placeholder">
+                        QR-код<br>hmpdacc.org
+                    </div>
+                    <p style="text-align: center; margin-top: 20px; color: #00d4aa;">
+                        Спасибо за внимание!<br>
+                        Готов ответить на вопросы
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Навигация -->
+    <div class="nav">
+        <button onclick="prevSlide()">◀ Назад</button>
+        <button onclick="nextSlide()">Вперёд ▶</button>
+    </div>
+    <div class="slide-counter">
+        <span id="current">1</span> / <span id="total">16</span>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            document.getElementById('current').textContent = currentSlide + 1;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Управление с клавиатуры
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Свайпы для мобильных
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) nextSlide();
+            if (touchEndX - touchStartX > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>
